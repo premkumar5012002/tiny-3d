@@ -4,8 +4,10 @@ project(Tiny3D)
 
 find_package(SDL2 REQUIRED)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -D_THREAD_SAFE")
+include_directories(${SDL2_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME} src/main.c)
+set(SOURCES src/main.c)
 
-target_link_libraries(${PROJECT_NAME} SDL2::SDL2)
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
