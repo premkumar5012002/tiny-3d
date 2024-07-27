@@ -142,24 +142,22 @@ void draw_dots(void)
 
 void draw_rect(int x, int y, int width, int height, uint32_t color)
 {
-    for (int _y = 0; _y < window_height; _y++)
+    for (int i = 0; i < width; i++)
     {
-        for (int _x = 0; _x < window_width; _x++)
+        for (int j = 0; j < height; j++)
         {
-            if (_y >= y && _y <= (y + height))
-            {
-                if (_x >= x && _x <= (x + width))
-                {
-                    color_buffer[(window_width * _y) + _x] = 0xFF333333;
-                }
-            }
+            int current_x = x + i;
+            int current_y = y + j;
+            color_buffer[(window_width * current_y) + current_x] = color;
         }
     }
 }
 
 void render(void)
 {
+    draw_dots();
     draw_rect(100, 100, 200, 200, 0xFFFFFF);
+    draw_rect(300, 300, 200, 200, 0xFFFFFF);
 
     render_color_buffer();
 
