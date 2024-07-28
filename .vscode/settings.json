@@ -1,6 +1,8 @@
 {
   "files.associations": {
     "sdl.h": "c",
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "stdio.h": "c",
+    "display.h": "c"
   }
 }
