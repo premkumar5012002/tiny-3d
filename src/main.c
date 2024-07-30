@@ -4,6 +4,11 @@
 #include <SDL2/SDL.h>
 
 #include "display.h"
+#include "vector.h"
+
+#define N_POINTS (9 * 9 * 9)
+
+vec3_t cube_points[N_POINTS]; // 9x9x9x cube
 
 bool is_running = false;
 
@@ -20,6 +25,20 @@ bool setup(void)
 
     // Creating a SDL texture that is used to display the color
     color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+
+    int point_count = 0;
+
+    for (float x = -1; x <= 1; x += 0.25)
+    {
+        for (float y = -1; y <= 1; y += 0.25)
+        {
+            for (float z = -1; z <= 1; z += 0.25)
+            {
+                vec3_t new_cube_point = {x, y, z};
+                cube_points[point_count++] = new_cube_point;
+            }
+        }
+    }
 
     return true;
 }
@@ -54,8 +73,6 @@ void update(void) {}
 void render(void)
 {
     draw_dots();
-    draw_rect(100, 100, 200, 200, 0xFFFFFF);
-    draw_rect(300, 300, 200, 200, 0xFFFFFF);
 
     render_color_buffer();
 
