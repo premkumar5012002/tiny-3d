@@ -11,11 +11,15 @@
 vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
 
-vec3_t camera_position = {0, 0, -5};
+vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
+vec3_t cube_rotation = {.x = 0, .y = 0, .z = 0};
 
 float fov_factor = 640;
 
+bool is_paused = false;
 bool is_running = false;
+
+int previous_time_frame = 0;
 
 bool setup(void)
 {
@@ -69,6 +73,9 @@ void process_input(void)
         if (event.key.keysym.sym == SDLK_ESCAPE)
             is_running = false;
 
+        if (event.key.keysym.sym == SDLK_SPACE)
+            is_paused = !is_paused;
+
         break;
     }
 }
@@ -84,15 +91,31 @@ vec2_t project(vec3_t point)
 
 void update(void)
 {
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_time_frame);
+
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME)
+    {
+        SDL_Delay(time_to_wait);
+    }
+
+    previous_time_frame = SDL_GetTicks64();
+
+    if (is_paused == false)
+    {
+        cube_rotation.y += 0.01;
+    }
+
     for (int i = 0; i < N_POINTS; i++)
     {
         vec3_t point = cube_points[i];
 
-        // Move the points away from the camera
-        point.z -= camera_position.z;
+        vec3_t transformed_point = vec3_rotate_x(point, cube_rotation.y);
+
+        // Move the point away from the camera
+        transformed_point.z -= camera_position.z;
 
         // Project the current point
-        vec2_t projected_point = project(point);
+        vec2_t projected_point = project(transformed_point);
 
         // Save the projected 2D vector in the array of projected points
         projected_points[i] = projected_point;

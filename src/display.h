@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#define FPS 30
+// FRAME_TARGET_TIME defines minimum interval wait period between two frames in millisecond
+#define FRAME_TARGET_TIME (1000 / FPS)
+
 extern int window_width;
 extern int window_height;
 
