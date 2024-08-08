@@ -3,11 +3,12 @@
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 
+#include "array.h"
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
 
-triangle_t triangle_to_render[N_MESH_FACES];
+triangle_t *triangle_to_render = NULL;
 
 vec3_t camera_position = {.x = 0, .y = 0, .z = -5};
 vec3_t cube_rotation = {.x = 0, .y = 0, .z = 0};
@@ -89,6 +90,9 @@ void update(void)
         cube_rotation.y += 0.01;
     }
 
+    // Initialize the array of triangles to render
+    triangle_to_render = NULL;
+
     for (int i = 0; i < N_MESH_FACES; i++)
     {
         face_t mesh_face = mesh_faces[i];
@@ -121,7 +125,7 @@ void update(void)
         }
 
         // Save the projected triangle in the array of triangle to render
-        triangle_to_render[i] = projected_triangle;
+        array_push(triangle_to_render, projected_triangle);
     }
 }
 
@@ -129,12 +133,16 @@ void render(void)
 {
     draw_dots();
 
+    int num_triangle = array_length(triangle_to_render);
+
     // Loop all projected triangle and render then
-    for (int i = 0; i < N_MESH_FACES; i++)
+    for (int i = 0; i < num_triangle; i++)
     {
         triangle_t triangle = triangle_to_render[i];
         draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, 0xFFFFFF00);
     }
+
+    array_free(triangle_to_render);
 
     render_color_buffer();
 
