@@ -1,5 +1,14 @@
+#include <stdio.h>
+
+#include "array.h"
 #include "mesh.h"
 #include "triangle.h"
+
+mesh_t mesh = {
+    .faces = NULL,
+    .vertices = NULL,
+    .rotation = {.x = 0, .y = 0, .z = 0},
+};
 
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
     {.x = -1, .y = -1, .z = -1},
@@ -32,3 +41,20 @@ face_t cube_faces[N_CUBE_FACES] = {
     {.a = 6, .b = 8, .c = 1},
     {.a = 6, .b = 1, .c = 4},
 };
+
+void load_cube_mesh_data(void)
+{
+    // For cube vertices
+    for (int i = 0; i < N_CUBE_VERTICES; i++)
+    {
+        vec3_t cube_vertex = cube_vertices[i];
+        array_push(mesh.vertices, cube_vertex);
+    }
+
+    // For cube faces
+    for (int i = 0; i < N_CUBE_FACES; i++)
+    {
+        face_t cube_face = cube_faces[i];
+        array_push(mesh.faces, cube_face);
+    }
+}
