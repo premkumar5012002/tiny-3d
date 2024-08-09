@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "array.h"
 #include "mesh.h"
@@ -56,5 +57,38 @@ void load_cube_mesh_data(void)
     {
         face_t cube_face = cube_faces[i];
         array_push(mesh.faces, cube_face);
+    }
+}
+
+void load_obj_file_data(char *filename)
+{
+    FILE *file;
+    file = fopen(filename, "r");
+
+    char line[512];
+
+    while (fgets(line, 512, file))
+    {
+        // Vertex information
+        if (strncmp(line, "v ", 2) == 0)
+        {
+            vec3_t vertex;
+
+            sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
+
+            array_push(mesh.vertices, vertex);
+        }
+
+        // Face information
+        if (strncmp(line, "f ", 2) == 0)
+        {
+            face_t face;
+            int texture_indices[3];
+            int normal_indices[3];
+
+            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", &face.a, &texture_indices[0], &normal_indices[0], &face.b, &texture_indices[1], &normal_indices[1], &face.c, &texture_indices[2], &normal_indices[2]);
+
+            array_push(mesh.faces, face);
+        }
     }
 }
