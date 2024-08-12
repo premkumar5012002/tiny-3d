@@ -1,6 +1,16 @@
-#include "math.h"
+#include <math.h>
 
 #include "vector.h"
+
+float vec2_length(vec2_t v)
+{
+    return sqrt(pow(v.x, 2) + pow(v.y, 2));
+}
+
+float vec3_length(vec3_t v)
+{
+    return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
+}
 
 vec3_t vec3_rotate_x(vec3_t v, float angle)
 {
