@@ -2,9 +2,66 @@
 
 #include "vector.h"
 
+vec2_t vec2_add(vec2_t v1, vec2_t v2)
+{
+    vec2_t result = {
+        .x = v1.x + v2.y,
+        .y = v1.y + v2.y,
+    };
+    return result;
+}
+
+vec2_t vec2_sub(vec2_t v1, vec2_t v2)
+{
+    vec2_t result = {
+        .x = v1.x - v2.y,
+        .y = v1.y - v2.y,
+    };
+    return result;
+}
+
+vec2_t vec2_mul(vec2_t v, float factor)
+{
+    vec2_t result = {
+        .x = v.x * factor,
+        .y = v.y * factor,
+    };
+    return result;
+}
+
 float vec2_length(vec2_t v)
 {
     return sqrt(pow(v.x, 2) + pow(v.y, 2));
+}
+
+vec3_t vec3_add(vec3_t v1, vec3_t v2)
+{
+    vec3_t result = {
+        .x = v1.x + v2.y,
+        .y = v1.y + v2.y,
+        .z = v1.z + v2.z,
+    };
+    return result;
+}
+
+vec3_t vec3_sub(vec3_t v1, vec3_t v2)
+{
+    vec3_t result = {
+        .x = v1.x - v2.y,
+        .y = v1.y - v2.y,
+        .z = v1.z - v2.z,
+    };
+    return result;
+}
+
+vec3_t vec3_mul(vec3_t v, float factor)
+{
+    vec3_t result = {
+        .x = v.x * factor,
+        .y = v.y * factor,
+        .z = v.z * factor,
+    };
+    return result;
 }
 
 float vec3_length(vec3_t v)
