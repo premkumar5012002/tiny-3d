@@ -5,7 +5,7 @@
 vec2_t vec2_add(vec2_t v1, vec2_t v2)
 {
     vec2_t result = {
-        .x = v1.x + v2.y,
+        .x = v1.x + v2.x,
         .y = v1.y + v2.y,
     };
     return result;
@@ -14,7 +14,7 @@ vec2_t vec2_add(vec2_t v1, vec2_t v2)
 vec2_t vec2_sub(vec2_t v1, vec2_t v2)
 {
     vec2_t result = {
-        .x = v1.x - v2.y,
+        .x = v1.x - v2.x,
         .y = v1.y - v2.y,
     };
     return result;
@@ -51,7 +51,7 @@ float vec2_dot(vec2_t v1, vec2_t v2)
 vec3_t vec3_add(vec3_t v1, vec3_t v2)
 {
     vec3_t result = {
-        .x = v1.x + v2.y,
+        .x = v1.x + v2.x,
         .y = v1.y + v2.y,
         .z = v1.z + v2.z,
     };
