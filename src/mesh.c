@@ -82,11 +82,19 @@ void load_obj_file_data(char *filename)
         // Face information
         if (strncmp(line, "f ", 2) == 0)
         {
-            face_t face;
+            int vertex_indices[3];
             int texture_indices[3];
             int normal_indices[3];
 
-            sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", &face.a, &texture_indices[0], &normal_indices[0], &face.b, &texture_indices[1], &normal_indices[1], &face.c, &texture_indices[2], &normal_indices[2]);
+            sscanf(
+                line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
+                &vertex_indices[0], &texture_indices[0], &normal_indices[0],
+                &vertex_indices[1], &texture_indices[1], &normal_indices[1],
+                &vertex_indices[2], &texture_indices[2], &normal_indices[2]);
+            face_t face = {
+                .a = vertex_indices[0],
+                .b = vertex_indices[1],
+                .c = vertex_indices[2]};
 
             array_push(mesh.faces, face);
         }

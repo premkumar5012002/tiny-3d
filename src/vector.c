@@ -61,7 +61,7 @@ vec3_t vec3_add(vec3_t v1, vec3_t v2)
 vec3_t vec3_sub(vec3_t v1, vec3_t v2)
 {
     vec3_t result = {
-        .x = v1.x - v2.y,
+        .x = v1.x - v2.x,
         .y = v1.y - v2.y,
         .z = v1.z - v2.z,
     };
