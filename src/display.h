@@ -1,11 +1,12 @@
 #pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define FPS 30
-// FRAME_TARGET_TIME defines minimum interval wait period between two frames in millisecond
+// FRAME_TARGET_TIME defines minimum interval wait period between two frames in
+// millisecond
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 extern int window_width;
@@ -25,7 +26,8 @@ void draw_dots(void);
 void draw_pixel(int x, int y, uint32_t color);
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
 void draw_rect(int x, int y, int width, int height, uint32_t color);
-void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
+void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
+                   uint32_t color);
 
 void render_color_buffer(void);
 void clear_color_buffer(uint32_t color);
