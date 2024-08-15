@@ -84,17 +84,20 @@ void update(void) {
     SDL_Delay(time_to_wait);
   }
 
+  if (is_paused == false) {
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
+  }
+
   previous_time_frame = SDL_GetTicks64();
 
   // Initialize the array of triangles to render
   triangle_to_render = NULL;
 
-  if (is_paused == false) {
-    mesh.rotation.y += 0.01;
-  }
-
   // Loop all triangle faces of our mesh
   int num_faces = array_length(mesh.faces);
+
   for (int i = 0; i < num_faces; i++) {
     face_t mesh_face = mesh.faces[i];
 
@@ -110,7 +113,9 @@ void update(void) {
     for (int j = 0; j < 3; j++) {
       vec3_t transformed_vertex = face_vertices[j];
 
-      transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+      vec3_rotate_x(&transformed_vertex, mesh.rotation.x);
+      vec3_rotate_y(&transformed_vertex, mesh.rotation.y);
+      vec3_rotate_z(&transformed_vertex, mesh.rotation.z);
 
       // Translate the vertices away from the camera
       transformed_vertex.z += 5;
@@ -175,9 +180,15 @@ void render(void) {
   int num_triangle = array_length(triangle_to_render);
   for (int i = 0; i < num_triangle; i++) {
     triangle_t triangle = triangle_to_render[i];
+
+    draw_filled_triangle(triangle.points[0].x, triangle.points[0].y,
+                         triangle.points[1].x, triangle.points[1].y,
+                         triangle.points[2].x, triangle.points[2].y,
+                         0xFFFFFFFF);
+
     draw_triangle(triangle.points[0].x, triangle.points[0].y,
                   triangle.points[1].x, triangle.points[1].y,
-                  triangle.points[2].x, triangle.points[2].y, 0xFFFFFF00);
+                  triangle.points[2].x, triangle.points[2].y, 0xFF000000);
   }
 
   array_free(triangle_to_render);

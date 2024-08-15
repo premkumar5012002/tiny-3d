@@ -104,29 +104,23 @@ void vec3_normalize(vec3_t *v) {
   v->z /= length;
 }
 
-vec3_t vec3_rotate_x(vec3_t v, float angle) {
-  vec3_t rotated_vector = {
-      .x = v.x,
-      .y = v.y * cos(angle) - v.z * sin(angle),
-      .z = v.y * sin(angle) + v.z * cos(angle),
-  };
-  return rotated_vector;
+void vec3_rotate_x(vec3_t *v, float angle) {
+  float new_y = v->y * cos(angle) - v->z * sin(angle);
+  float new_z = v->y * sin(angle) + v->z * cos(angle);
+  v->y = new_y;
+  v->z = new_z;
 }
 
-vec3_t vec3_rotate_y(vec3_t v, float angle) {
-  vec3_t rotated_vector = {
-      .x = v.x * cos(angle) - v.z * sin(angle),
-      .y = v.y,
-      .z = v.x * sin(angle) + v.z * cos(angle),
-  };
-  return rotated_vector;
+void vec3_rotate_y(vec3_t *v, float angle) {
+  float new_x = v->x * cos(angle) + v->z * sin(angle);
+  float new_z = -v->x * sin(angle) + v->z * cos(angle);
+  v->x = new_x;
+  v->z = new_z;
 }
 
-vec3_t vec3_rotate_z(vec3_t v, float angle) {
-  vec3_t rotated_vector = {
-      .x = v.x * cos(angle) - v.y * sin(angle),
-      .y = v.x * sin(angle) + v.y * cos(angle),
-      .z = v.z,
-  };
-  return rotated_vector;
+void vec3_rotate_z(vec3_t *v, float angle) {
+  float new_x = v->x * cos(angle) - v->y * sin(angle);
+  float new_y = v->x * sin(angle) + v->y * cos(angle);
+  v->x = new_x;
+  v->y = new_y;
 }
