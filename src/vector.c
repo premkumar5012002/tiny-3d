@@ -93,9 +93,7 @@ float vec3_dot(vec3_t v1, vec3_t v2) {
   return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
 }
 
-float vec3_length(vec3_t *v) {
-  return sqrt(pow(v->x, 2) + pow(v->y, 2) + pow(v->z, 2));
-}
+float vec3_length(vec3_t *v) { return sqrt(pow(v->x, 2) + pow(v->y, 2) + pow(v->z, 2)); }
 
 void vec3_normalize(vec3_t *v) {
   float length = vec3_length(v);

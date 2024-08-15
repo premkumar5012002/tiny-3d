@@ -24,7 +24,6 @@ bool initialize_window(void) {
   // Use SDL to query what is the fullscreen max. width and height
   SDL_DisplayMode display_mode;
   SDL_GetCurrentDisplayMode(0, &display_mode);
-
   window_width = display_mode.w;
   window_height = display_mode.h;
 
@@ -32,7 +31,7 @@ bool initialize_window(void) {
   // always shown on top all application.
   window =
       SDL_CreateWindow("Tiny3D", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       window_width, window_height, SDL_WINDOW_ALWAYS_ON_TOP);
+                       window_width, window_height, SDL_WINDOW_BORDERLESS);
 
   if (window == NULL) {
     fprintf(stderr, "Error creating SDL Window. \n");
@@ -88,7 +87,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
   float current_x = x0;
   float current_y = y0;
 
-  for (int i = 0; i < side_length; i++) {
+  for (int i = 0; i <= side_length; i++) {
     draw_pixel(round(current_x), round(current_y), color);
     current_x += x_inc;
     current_y += y_inc;
