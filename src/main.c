@@ -18,13 +18,14 @@ bool is_paused = false;
 bool is_running = false;
 
 enum CULL_METHOD cull_method = CULL_BACKFACE;
-enum RENDER_METHOD render_method = RENDER_WIRE;
+enum RENDER_METHOD render_method = RENDER_WIRE_VERTEX;
 
 int previous_time_frame = 0;
 
 bool setup(void) {
   // Allocate the required memory in bytes to hold the color buffer.
-  color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+  color_buffer =
+      (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
 
   if (color_buffer == NULL) {
     fprintf(stderr, "Error allocating memory to color_buffer. \n");
@@ -32,11 +33,13 @@ bool setup(void) {
   }
 
   // Creating a SDL texture that is used to display the color
-  color_buffer_texture =
-      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-                        window_width, window_height);
+  color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+                                           SDL_TEXTUREACCESS_STREAMING,
+                                           window_width, window_height);
 
-  load_obj_file_data("../assets/cube.obj");
+  load_cube_mesh_data();
+
+  // load_obj_file_data("../assets/f22.obj");
 
   return true;
 }
@@ -103,9 +106,42 @@ vec2_t project(vec3_t point) {
   return projected_point;
 }
 
+int partition(triangle_t *array, int start, int end) {
+  int pivot = array[end].avg_depth;
+  int i = start - 1;
+
+  for (int j = start; j <= end - 1; j++) {
+    if (array[j].avg_depth > pivot) {
+      i++;
+      triangle_t temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+  }
+
+  i++;
+  triangle_t temp = array[i];
+  array[i] = array[end];
+  array[end] = temp;
+
+  return i;
+}
+
+void quick_sort(triangle_t *array, int start, int end) {
+  if (end <= start) {
+    return;
+  }
+
+  int pivot = partition(array, start, end);
+
+  quick_sort(array, start, pivot - 1);
+  quick_sort(array, pivot + 1, end);
+}
+
 void update(void) {
   // Wait some time until the reach the target frame time in milliseconds
-  int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_time_frame);
+  int time_to_wait =
+      FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_time_frame);
 
   // Only delay execution if we are running too fast
   if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
@@ -165,7 +201,8 @@ void update(void) {
       vec3_t vector_ac = vec3_sub(vector_c, vector_a);
       vec3_normalize(&vector_ac);
 
-      // Compute the face normal using cross product to find penpendicular vector
+      // Compute the face normal using cross product to find penpendicular
+      // vector
       vec3_t normal = vec3_cross(vector_ab, vector_ac);
 
       // Normalize the face normal vector
@@ -198,9 +235,18 @@ void update(void) {
       projected_triangle.points[j] = projected_vertex;
     }
 
+    projected_triangle.color = mesh_face.color;
+    projected_triangle.avg_depth =
+        (transformed_vertices[0].z + transformed_vertices[1].z +
+         transformed_vertices[2].z) /
+        3;
+
     // Save the projected triangle in the array of triangle to render
     array_push(triangle_to_render, projected_triangle);
   }
+
+  // Sort the triangle to render based on avg depth
+  quick_sort(triangle_to_render, 0, array_length(triangle_to_render) - 1);
 }
 
 void render(void) {
@@ -215,20 +261,24 @@ void render(void) {
         render_method == RENDER_FILL_TRIANGLE_WIRE) {
       draw_filled_triangle(triangle.points[0].x, triangle.points[0].y,
                            triangle.points[1].x, triangle.points[1].y,
-                           triangle.points[2].x, triangle.points[2].y, 0xFF555555);
+                           triangle.points[2].x, triangle.points[2].y,
+                           triangle.color);
     }
 
     if (render_method == RENDER_WIRE || render_method == RENDER_WIRE_VERTEX ||
         render_method == RENDER_FILL_TRIANGLE_WIRE) {
-      draw_triangle(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x,
-                    triangle.points[1].y, triangle.points[2].x, triangle.points[2].y,
-                    0xFFFFFFFF);
+      draw_triangle(triangle.points[0].x, triangle.points[0].y,
+                    triangle.points[1].x, triangle.points[1].y,
+                    triangle.points[2].x, triangle.points[2].y, 0xFFFFFFFF);
     }
 
     if (render_method == RENDER_WIRE_VERTEX) {
-      draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFF0000);
-      draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFF0000);
-      draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFF0000);
+      draw_rect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6,
+                0xFFFF0000);
+      draw_rect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6,
+                0xFFFF0000);
+      draw_rect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6,
+                0xFFFF0000);
     }
   }
 

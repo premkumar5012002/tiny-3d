@@ -21,23 +21,23 @@ vec3_t cube_vertices[N_CUBE_VERTICES] = {
 
 face_t cube_faces[N_CUBE_FACES] = {
     // front
-    {.a = 1, .b = 2, .c = 3},
-    {.a = 1, .b = 3, .c = 4},
+    {.a = 1, .b = 2, .c = 3, .color = 0xFFF0F0FF},
+    {.a = 1, .b = 3, .c = 4, .color = 0xFFF35FFF},
     // right
-    {.a = 4, .b = 3, .c = 5},
-    {.a = 4, .b = 5, .c = 6},
+    {.a = 4, .b = 3, .c = 5, .color = 0xFFF5FFFF},
+    {.a = 4, .b = 5, .c = 6, .color = 0xF78FFFFF},
     // back
-    {.a = 6, .b = 5, .c = 7},
-    {.a = 6, .b = 7, .c = 8},
+    {.a = 6, .b = 5, .c = 7, .color = 0xFF56FFFF},
+    {.a = 6, .b = 7, .c = 8, .color = 0xFF78FFFF},
     // left
-    {.a = 8, .b = 7, .c = 2},
-    {.a = 8, .b = 2, .c = 1},
+    {.a = 8, .b = 7, .c = 2, .color = 0xFF89FFFF},
+    {.a = 8, .b = 2, .c = 1, .color = 0xFF37FFFF},
     // top
-    {.a = 2, .b = 7, .c = 5},
-    {.a = 2, .b = 5, .c = 3},
+    {.a = 2, .b = 7, .c = 5, .color = 0xFF48FFFF},
+    {.a = 2, .b = 5, .c = 3, .color = 0xFFFF89FF},
     // bottom
-    {.a = 6, .b = 8, .c = 1},
-    {.a = 6, .b = 1, .c = 4},
+    {.a = 6, .b = 8, .c = 1, .color = 0xFFFF36FF},
+    {.a = 6, .b = 1, .c = 4, .color = 0xFFFF37FF},
 };
 
 void load_cube_mesh_data(void) {
