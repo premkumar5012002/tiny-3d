@@ -11,9 +11,8 @@
 
 triangle_t *triangle_to_render = NULL;
 
-vec3_t camera_position = {0, 0, 0};
-
 float fov_factor = 640;
+vec3_t camera_position = {0, 0, 0};
 
 bool is_paused = false;
 bool is_running = false;
@@ -103,8 +102,8 @@ void process_input(void) {
 
 vec2_t project(vec3_t point) {
   vec2_t projected_point = {
-    .x = (fov_factor * point.x) / point.z,
-    .y = (fov_factor * point.y) / point.z,
+    .x = (point.x * fov_factor) / point.z,
+    .y = (point.y * fov_factor) / point.z,
   };
   return projected_point;
 }
@@ -147,21 +146,23 @@ void update(void) {
     SDL_Delay(time_to_wait);
   }
 
-  if (is_paused == false) {
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
-  }
-
-  mesh.scale.x += 0.002;
-
-  // Createa a scale matrix that will be used to multiply the mesh vertices
-  mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-
   previous_time_frame = SDL_GetTicks64();
 
   // Initialize the array of triangles to render
   triangle_to_render = NULL;
+
+  if (is_paused == false) {
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
+
+    mesh.scale.x += 0.002;
+    mesh.scale.y += 0.002;
+    mesh.scale.z += 0.002;
+  }
+
+  // Createa a scale matrix that will be used to multiply the mesh vertices
+  mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 
   // Loop all triangle faces of our mesh
   int num_faces = array_length(mesh.faces);
@@ -175,14 +176,14 @@ void update(void) {
     face_vertices[1] = mesh.vertices[mesh_face.b - 1];
     face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
-    vec3_t transformed_vertices[3];
+    vec4_t transformed_vertices[3];
 
     // Loop all three vertices of this current face and apply transformations
     for (int j = 0; j < 3; j++) {
-      vec3_t transformed_vertex = face_vertices[j];
+      vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
       // Use a matrix to scale our original vertex
-      
+      transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
 
       // vec3_rotate_x(&transformed_vertex, mesh.rotation.x);
       // vec3_rotate_y(&transformed_vertex, mesh.rotation.y);
@@ -197,9 +198,9 @@ void update(void) {
 
     if (cull_method == CULL_BACKFACE) {
       // Check backface culling
-      vec3_t vector_a = transformed_vertices[0];
-      vec3_t vector_b = transformed_vertices[1];
-      vec3_t vector_c = transformed_vertices[2];
+      vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+      vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+      vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
 
       // Get the vector subtraction of B-A and C-A
       vec3_t vector_ab = vec3_sub(vector_b, vector_a);
@@ -233,7 +234,7 @@ void update(void) {
     // Loop all three vertices transformed vertices and 2D projection
     for (int j = 0; j < 3; j++) {
       // Project the current vertex
-      vec2_t projected_vertex = project(transformed_vertices[j]);
+      vec2_t projected_vertex = project(vec3_from_vec4(transformed_vertices[j]));
 
       // Translate the vertex to the middle of the screen
       projected_vertex.x += (window_width / 2);
@@ -242,12 +243,13 @@ void update(void) {
       projected_triangle.points[j] = projected_vertex;
     }
 
-    projected_triangle.color = mesh_face.color;
     projected_triangle.avg_depth = (
       transformed_vertices[0].z +
       transformed_vertices[1].z +
       transformed_vertices[2].z
     ) / 3;
+
+    projected_triangle.color = mesh_face.color;
 
     // Save the projected triangle in the array of triangle to render
     array_push(triangle_to_render, projected_triangle);

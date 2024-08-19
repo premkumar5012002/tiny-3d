@@ -1,6 +1,6 @@
-#include "vector.h"
-
 #include <math.h>
+
+#include "vector.h"
 
 vec2_t vec2_add(vec2_t v1, vec2_t v2) {
   vec2_t result = {
@@ -34,7 +34,9 @@ vec2_t vec2_div(vec2_t v, float factor) {
   return result;
 }
 
-float vec2_length(vec2_t *v) { return sqrt(pow(v->x, 2) + pow(v->y, 2)); }
+float vec2_length(vec2_t *v) {
+  return sqrt(pow(v->x, 2) + pow(v->y, 2));
+}
 
 void vec2_normalize(vec2_t *v) {
   float length = vec2_length(v);
@@ -42,7 +44,9 @@ void vec2_normalize(vec2_t *v) {
   v->y /= v->y / length;
 }
 
-float vec2_dot(vec2_t v1, vec2_t v2) { return (v1.x * v2.x) + (v1.y * v2.y); }
+float vec2_dot(vec2_t v1, vec2_t v2) {
+  return (v1.x * v2.x) + (v1.y * v2.y);
+}
 
 vec3_t vec3_add(vec3_t v1, vec3_t v2) {
   vec3_t result = {
@@ -124,3 +128,23 @@ void vec3_rotate_z(vec3_t *v, float angle) {
   v->x = new_x;
   v->y = new_y;
 }
+
+vec3_t vec3_from_vec4(vec4_t v) {
+  vec3_t result = {
+    .x = v.x,
+    .y = v.y,
+    .z = v.z,
+  };
+  return result;
+}
+
+vec4_t vec4_from_vec3(vec3_t v) {
+  vec4_t result = {
+    .x = v.x,
+    .y = v.y,
+    .z = v.z,
+    .w = 1
+  };
+  return result;
+}
+

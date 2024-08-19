@@ -11,11 +11,9 @@
     },
     {
       "name": "Mac",
-      "includePath": ["${workspaceFolder}/**", "/opt/homebrew/Cellar/sdl2/2.30.5/include"],
+      "includePath": ["${workspaceFolder}/**", "/opt/homebrew/Cellar/sdl2/2.30.6/include"],
       "defines": [],
-      "macFrameworkPath": [
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-      ],
+      "macFrameworkPath": ["/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"],
       "compilerPath": "/usr/bin/clang",
       "cStandard": "c17",
       "cppStandard": "c++17",
