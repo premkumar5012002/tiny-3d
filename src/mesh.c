@@ -9,7 +9,9 @@
 mesh_t mesh = {
     .faces = NULL,
     .vertices = NULL,
+    .scale = { .x = 1.0, .y = 1.0, .z = 1.0 },
     .rotation = {.x = 0, .y = 0, .z = 0},
+    .translation = { .x = 0, .y = 0, .z = 0 }
 };
 
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
@@ -64,9 +66,7 @@ void load_obj_file_data(char *filename) {
     // Vertex information
     if (strncmp(line, "v ", 2) == 0) {
       vec3_t vertex;
-
       sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-
       array_push(mesh.vertices, vertex);
     }
 
@@ -76,13 +76,19 @@ void load_obj_file_data(char *filename) {
       int texture_indices[3];
       int normal_indices[3];
 
-      sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", &vertex_indices[0],
-             &texture_indices[0], &normal_indices[0], &vertex_indices[1],
-             &texture_indices[1], &normal_indices[1], &vertex_indices[2],
-             &texture_indices[2], &normal_indices[2]);
-      face_t face = {.a = vertex_indices[0],
-                     .b = vertex_indices[1],
-                     .c = vertex_indices[2]};
+      sscanf(
+        line,
+        "f %d/%d/%d %d/%d/%d %d/%d/%d",
+        &vertex_indices[0], &texture_indices[0], &normal_indices[0],
+        &vertex_indices[1], &texture_indices[1], &normal_indices[1],
+        &vertex_indices[2], &texture_indices[2], &normal_indices[2]
+      );
+
+      face_t face = {
+        .a = vertex_indices[0],
+        .b = vertex_indices[1],
+        .c = vertex_indices[2]
+      };
 
       array_push(mesh.faces, face);
     }

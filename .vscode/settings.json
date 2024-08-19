@@ -5,6 +5,7 @@
     "stdio.h": "c",
     "display.h": "c",
     "mesh.h": "c",
+    "matrix.h": "c",
     "vector.h": "c",
     "chrono": "c",
     "functional": "c",
