@@ -11,8 +11,8 @@
 
 triangle_t *triangle_to_render = NULL;
 
-float fov_factor = 640;
-vec3_t camera_position = {0, 0, 0};
+mat4_t proj_matrix;
+vec3_t camera_position = { 0, 0, 0 };
 
 bool is_paused = false;
 bool is_running = false;
@@ -38,6 +38,13 @@ bool setup(void) {
     SDL_TEXTUREACCESS_STREAMING,
     window_width, window_height
   );
+
+  float fov = M_PI / 3; // the same as 180/3, or 60deg 
+  float ascept = (float) window_height / (float) window_width;
+  float znear = 0.1;
+  float zfar = 100.0;
+
+  proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
   load_cube_mesh_data();
 
@@ -100,14 +107,6 @@ void process_input(void) {
   }
 }
 
-vec2_t project(vec3_t point) {
-  vec2_t projected_point = {
-    .x = (point.x * fov_factor) / point.z,
-    .y = (point.y * fov_factor) / point.z,
-  };
-  return projected_point;
-}
-
 int partition(triangle_t *array, int start, int end) {
   int pivot = array[end].avg_depth;
   int i = start - 1;
@@ -156,13 +155,30 @@ void update(void) {
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
-    mesh.scale.x += 0.002;
-    mesh.scale.y += 0.002;
-    mesh.scale.z += 0.002;
+    // mesh.scale.x += 0.002;
+    // mesh.scale.y += 0.002;
+    // mesh.scale.z += 0.002;
+
+    // mesh.translation.x += 0.01;
+    // mesh.translation.y += 0.01;
+    mesh.translation.z = 5;
   }
 
-  // Createa a scale matrix that will be used to multiply the mesh vertices
-  mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+  mat4_t scale_matrix = mat4_make_scale(
+    mesh.scale.x,
+    mesh.scale.y,
+    mesh.scale.z
+  );
+
+  mat4_t translation_matrix = mat4_make_translation(
+    mesh.translation.x,
+    mesh.translation.y,
+    mesh.translation.z
+  );
+
+  mat4_t rotation_x_matrix = mat4_make_rotation_x(mesh.rotation.x);
+  mat4_t rotation_y_matrix = mat4_make_rotation_y(mesh.rotation.y);
+  mat4_t rotation_z_matrix = mat4_make_rotation_z(mesh.rotation.z);
 
   // Loop all triangle faces of our mesh
   int num_faces = array_length(mesh.faces);
@@ -182,18 +198,18 @@ void update(void) {
     for (int j = 0; j < 3; j++) {
       vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
-      // Use a matrix to scale our original vertex
-      transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+      // Create a World Matrix combining scale, rotation, and translation matrices
+      mat4_t world_matrix = mat4_identity();
 
-      // vec3_rotate_x(&transformed_vertex, mesh.rotation.x);
-      // vec3_rotate_y(&transformed_vertex, mesh.rotation.y);
-      // vec3_rotate_z(&transformed_vertex, mesh.rotation.z);
+      world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
 
-      // Translate the vertices away from the camera
-      transformed_vertex.z += 5;
+      world_matrix = mat4_mul_mat4(rotation_x_matrix, world_matrix);
+      world_matrix = mat4_mul_mat4(rotation_y_matrix, world_matrix);
+      world_matrix = mat4_mul_mat4(rotation_z_matrix, world_matrix);
 
-      // Save transformed vertex in the array of transformed vertices
-      transformed_vertices[j] = transformed_vertex;
+      world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
+
+      transformed_vertices[j] = mat4_mul_vec4(world_matrix, transformed_vertex);
     }
 
     if (cull_method == CULL_BACKFACE) {
@@ -209,8 +225,7 @@ void update(void) {
       vec3_t vector_ac = vec3_sub(vector_c, vector_a);
       vec3_normalize(&vector_ac);
 
-      // Compute the face normal using cross product to find penpendicular
-      // vector
+      // Compute the face normal using cross product to find penpendicular vector
       vec3_t normal = vec3_cross(vector_ab, vector_ac);
 
       // Normalize the face normal vector
@@ -219,8 +234,7 @@ void update(void) {
       // Find the vector between a point in the triangle and the camera origin
       vec3_t camera_ray = vec3_sub(camera_position, vector_a);
 
-      // Calculate how aligned the camera ray is with the face normal (using dot
-      // product)
+      // Calculate how aligned the camera ray is with the face normal (using dot product)
       float dot_normal_camera = vec3_dot(normal, camera_ray);
 
       // Bypass the triangle that are looking away from camera
@@ -234,22 +248,23 @@ void update(void) {
     // Loop all three vertices transformed vertices and 2D projection
     for (int j = 0; j < 3; j++) {
       // Project the current vertex
-      vec2_t projected_vertex = project(vec3_from_vec4(transformed_vertices[j]));
+      vec4_t projected_vertex = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
+ 
+      // Scale the vertex into view
+      projected_vertex.x *= (window_width / 2.0);
+      projected_vertex.y *= (window_height/ 2.0);
 
       // Translate the vertex to the middle of the screen
-      projected_vertex.x += (window_width / 2);
-      projected_vertex.y += (window_height / 2);
+      projected_vertex.x += (window_width / 2.0);
+      projected_vertex.y += (window_height / 2.0);
 
-      projected_triangle.points[j] = projected_vertex;
+      projected_triangle.points[j].x = projected_vertex.x;
+      projected_triangle.points[j].y = projected_vertex.y;
     }
 
-    projected_triangle.avg_depth = (
-      transformed_vertices[0].z +
-      transformed_vertices[1].z +
-      transformed_vertices[2].z
-    ) / 3;
-
     projected_triangle.color = mesh_face.color;
+
+    projected_triangle.avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3;
 
     // Save the projected triangle in the array of triangle to render
     array_push(triangle_to_render, projected_triangle);
@@ -264,6 +279,7 @@ void render(void) {
 
   // Loop all projected triangle and render then
   int num_triangle = array_length(triangle_to_render);
+
   for (int i = 0; i < num_triangle; i++) {
     triangle_t triangle = triangle_to_render[i];
 
