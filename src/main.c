@@ -8,19 +8,20 @@
 #include "mesh.h"
 #include "matrix.h"
 #include "vector.h"
-
-triangle_t *triangle_to_render = NULL;
+#include "light.h"
 
 mat4_t proj_matrix;
 vec3_t camera_position = { 0, 0, 0 };
 
 bool is_paused = false;
 bool is_running = false;
+int previous_time_frame = 0;
 
 enum CULL_METHOD cull_method = CULL_BACKFACE;
 enum RENDER_METHOD render_method = RENDER_WIRE_VERTEX;
 
-int previous_time_frame = 0;
+triangle_t *triangle_to_render = NULL;
+
 
 bool setup(void) {
   // Allocate the required memory in bytes to hold the color buffer.
@@ -40,15 +41,14 @@ bool setup(void) {
   );
 
   float fov = M_PI / 3; // the same as 180/3, or 60deg 
-  float ascept = (float) window_height / (float) window_width;
+  float ascept = (float)window_height / (float)window_width;
   float znear = 0.1;
   float zfar = 100.0;
-
   proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
-  load_cube_mesh_data();
+  // load_cube_mesh_data();
 
-  // load_obj_file_data("../assets/f22.obj");
+  load_obj_file_data("../assets/f22.obj");
 
   return true;
 }
@@ -107,35 +107,6 @@ void process_input(void) {
   }
 }
 
-int partition(triangle_t *array, int start, int end) {
-  int pivot = array[end].avg_depth;
-  int i = start - 1;
-
-  for (int j = start; j <= end - 1; j++) {
-    if (array[j].avg_depth > pivot) {
-      i++;
-      triangle_t temp = array[i];
-      array[i] = array[j];
-      array[j] = temp;
-    }
-  }
-
-  i++;
-  triangle_t temp = array[i];
-  array[i] = array[end];
-  array[end] = temp;
-
-  return i;
-}
-
-void quick_sort(triangle_t *array, int start, int end) {
-  if (end >= start) {
-    int pivot = partition(array, start, end);
-    quick_sort(array, start, pivot - 1);
-    quick_sort(array, pivot + 1, end);
-  }
-}
-
 void update(void) {
   // Wait some time until the reach the target frame time in milliseconds
   int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks64() - previous_time_frame);
@@ -155,12 +126,12 @@ void update(void) {
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
-    // mesh.scale.x += 0.002;
-    // mesh.scale.y += 0.002;
-    // mesh.scale.z += 0.002;
+    mesh.scale.x += 0.00;
+    mesh.scale.y += 0.00;
+    mesh.scale.z += 0.00;
 
-    // mesh.translation.x += 0.01;
-    // mesh.translation.y += 0.01;
+    mesh.translation.x += 0.00;
+    mesh.translation.y += 0.00;
     mesh.translation.z = 5;
   }
 
@@ -212,37 +183,35 @@ void update(void) {
       transformed_vertices[j] = mat4_mul_vec4(world_matrix, transformed_vertex);
     }
 
-    if (cull_method == CULL_BACKFACE) {
-      // Check backface culling
-      vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
-      vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
-      vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
+    // Check backface culling
+    vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+    vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+    vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
 
-      // Get the vector subtraction of B-A and C-A
-      vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-      vec3_normalize(&vector_ab);
+    // Get the vector subtraction of B-A and C-A
+    vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+    vec3_normalize(&vector_ab);
 
-      vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-      vec3_normalize(&vector_ac);
+    vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+    vec3_normalize(&vector_ac);
 
-      // Compute the face normal using cross product to find penpendicular vector
-      vec3_t normal = vec3_cross(vector_ab, vector_ac);
+    // Compute the face normal using cross product to find penpendicular vector
+    vec3_t normal = vec3_cross(vector_ab, vector_ac);
 
-      // Normalize the face normal vector
-      vec3_normalize(&normal);
+    // Normalize the face normal vector
+    vec3_normalize(&normal);
 
-      // Find the vector between a point in the triangle and the camera origin
-      vec3_t camera_ray = vec3_sub(camera_position, vector_a);
+    // Find the vector between a point in the triangle and the camera origin
+    vec3_t camera_ray = vec3_sub(camera_position, vector_a);
 
-      // Calculate how aligned the camera ray is with the face normal (using dot product)
-      float dot_normal_camera = vec3_dot(normal, camera_ray);
+    // Calculate how aligned the camera ray is with the face normal (using dot product)
+    float dot_normal_camera = vec3_dot(normal, camera_ray);
 
-      // Bypass the triangle that are looking away from camera
-      if (dot_normal_camera < 0) {
-        continue;
-      }
+    // Bypass the triangle that are looking away from camera
+    if (dot_normal_camera < 0 && cull_method == CULL_BACKFACE) {
+      continue;
     }
-
+    
     triangle_t projected_triangle;
 
     // Loop all three vertices transformed vertices and 2D projection
@@ -254,6 +223,9 @@ void update(void) {
       projected_vertex.x *= (window_width / 2.0);
       projected_vertex.y *= (window_height/ 2.0);
 
+      // Invert the y values to account for flipped screen y coordinate
+      projected_vertex.y *= -1;
+
       // Translate the vertex to the middle of the screen
       projected_vertex.x += (window_width / 2.0);
       projected_vertex.y += (window_height / 2.0);
@@ -262,16 +234,35 @@ void update(void) {
       projected_triangle.points[j].y = projected_vertex.y;
     }
 
-    projected_triangle.color = mesh_face.color;
+    projected_triangle.avg_depth = (
+      transformed_vertices[0].z +
+      transformed_vertices[1].z +
+      transformed_vertices[2].z
+    ) / 3;
 
-    projected_triangle.avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3;
+    float light_intensity_factor = -vec3_dot(normal, light.direction);
+
+    uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
+
+    projected_triangle.color = triangle_color;
 
     // Save the projected triangle in the array of triangle to render
     array_push(triangle_to_render, projected_triangle);
   }
 
-  // Sort the triangle to render based on avg depth
-  quick_sort(triangle_to_render, 0, array_length(triangle_to_render) - 1);
+  // Sort the triangles to render by their avg_depth
+  int num_triangles = array_length(triangle_to_render);
+
+  for (int i = 0; i < num_triangles; i++) {
+    for (int j = i; j < num_triangles; j++) {
+      if (triangle_to_render[i].avg_depth < triangle_to_render[j].avg_depth) {
+        // Swap the triangles positions in the array
+        triangle_t temp = triangle_to_render[i];
+        triangle_to_render[i] = triangle_to_render[j];
+        triangle_to_render[j] = temp;
+      }
+    }
+  }  
 }
 
 void render(void) {
