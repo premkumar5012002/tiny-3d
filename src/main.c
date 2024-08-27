@@ -8,20 +8,22 @@
 #include "mesh.h"
 #include "matrix.h"
 #include "vector.h"
+#include "texture.h"
+#include "triangle.h"
 #include "light.h"
+
+bool is_paused = false;
+bool is_running = false;
 
 mat4_t proj_matrix;
 vec3_t camera_position = { 0, 0, 0 };
 
-bool is_paused = false;
-bool is_running = false;
 int previous_time_frame = 0;
-
-enum CULL_METHOD cull_method = CULL_BACKFACE;
-enum RENDER_METHOD render_method = RENDER_WIRE_VERTEX;
 
 triangle_t *triangle_to_render = NULL;
 
+enum CULL_METHOD cull_method = CULL_BACKFACE;
+enum RENDER_METHOD render_method = RENDER_WIRE_VERTEX;
 
 bool setup(void) {
   // Allocate the required memory in bytes to hold the color buffer.
@@ -46,31 +48,27 @@ bool setup(void) {
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
-  // load_cube_mesh_data();
+  mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+  texture_width = 64;
+  texture_heigth = 64;
 
-  load_obj_file_data("../assets/f22.obj");
+  load_cube_mesh_data();
+
+  // load_obj_file_data("../assets/f22.obj");
 
   return true;
 }
 
 void process_input(void) {
   SDL_Event event;
-
-  // Store the current event in the event variable to process system events
-  // (e.g., window close, resize) and keyboard input (e.g., key presses,
-  // releases).
   SDL_PollEvent(&event);
 
   switch (event.type) {
-    // Triggered when the user attempts to close the application, such as
-    // clicking the window's close button or pressing Alt+F4.
     case SDL_QUIT:
       is_running = false;
       break;
 
-    // Triggered when key is pressed on the keyboard.
     case SDL_KEYDOWN:
-      // SDLK stands for SDL Keycode
       if (event.key.keysym.sym == SDLK_ESCAPE) {
         is_running = false;
       }
@@ -95,6 +93,14 @@ void process_input(void) {
         render_method = RENDER_FILL_TRIANGLE_WIRE;
       }
 
+      if (event.key.keysym.sym == SDLK_5) {
+        render_method = RENDER_TEXTURED;
+      }
+
+      if (event.key.keysym.sym == SDLK_6) {
+        render_method = RENDERED_TEXTURED_WIRE;
+      }
+
       if (event.key.keysym.sym == SDLK_c) {
         cull_method = CULL_BACKFACE;
       }
@@ -102,8 +108,8 @@ void process_input(void) {
       if (event.key.keysym.sym == SDLK_d) {
         cull_method = CULL_NONE;
       }
-
-      break;
+      
+    break;
   }
 }
 
@@ -234,17 +240,25 @@ void update(void) {
       projected_triangle.points[j].y = projected_vertex.y;
     }
 
+    projected_triangle.tex_coords[0].u = mesh_face.a_uv.u;
+    projected_triangle.tex_coords[0].v = mesh_face.a_uv.v;
+
+    projected_triangle.tex_coords[1].u = mesh_face.b_uv.u;
+    projected_triangle.tex_coords[1].v = mesh_face.b_uv.v;
+
+    projected_triangle.tex_coords[2].u = mesh_face.c_uv.u;
+    projected_triangle.tex_coords[2].v = mesh_face.c_uv.v;
+
+    float light_intensity_factor = -vec3_dot(normal, light.direction);
+    uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
+    
+    projected_triangle.color = triangle_color;
+
     projected_triangle.avg_depth = (
       transformed_vertices[0].z +
       transformed_vertices[1].z +
       transformed_vertices[2].z
     ) / 3;
-
-    float light_intensity_factor = -vec3_dot(normal, light.direction);
-
-    uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
-
-    projected_triangle.color = triangle_color;
 
     // Save the projected triangle in the array of triangle to render
     array_push(triangle_to_render, projected_triangle);
@@ -289,13 +303,22 @@ void render(void) {
     if (
       render_method == RENDER_WIRE ||
       render_method == RENDER_WIRE_VERTEX ||
+      render_method == RENDERED_TEXTURED_WIRE ||
       render_method == RENDER_FILL_TRIANGLE_WIRE
     ) {
       draw_triangle(
         triangle.points[0].x, triangle.points[0].y,
         triangle.points[1].x, triangle.points[1].y,
         triangle.points[2].x, triangle.points[2].y,
-        0xFFFFFFFF
+        triangle.color
+      );
+    }
+
+    if (render_method == RENDER_TEXTURED) {
+      draw_textured_triangle(
+        triangle.points[0].x, triangle.points[0].y, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+        triangle.points[1].x, triangle.points[1].y, triangle.tex_coords[1].u, triangle.tex_coords[1].v, 
+        triangle.points[2].x, triangle.points[2].y, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
       );
     }
 

@@ -50,7 +50,6 @@ bool initialize_window(void) {
   }
 
   SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-
   return true;
 }
 
@@ -118,8 +117,7 @@ void draw_triangle(
   int x1, int y1,
   int x2, int y2,
   uint32_t color
-)
-{
+) {
   draw_line(x0, y0, x1, y1, color);
   draw_line(x1, y1, x2, y2, color);
   draw_line(x2, y2, x0, y0, color);
