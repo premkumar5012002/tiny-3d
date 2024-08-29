@@ -8,7 +8,7 @@ typedef struct {
 } tex2_t;
 
 extern int texture_width;
-extern int texture_heigth;
+extern int texture_height;
 
 extern const uint8_t REDBRICK_TEXTURE[];
 
