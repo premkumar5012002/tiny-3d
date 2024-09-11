@@ -49,11 +49,11 @@ bool setup(void) {
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
-  mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+  load_cube_mesh_data();
 
-  // load_cube_mesh_data();
+  // load_obj_file_data("../assets/f22.obj");
 
-  load_obj_file_data("../assets/f22.obj");
+  mesh_texture = (uint32_t*) REDBRICK_TEXTURE;
 
   return true;
 }
@@ -237,6 +237,8 @@ void update(void) {
 
       projected_triangle.points[j].x = projected_vertex.x;
       projected_triangle.points[j].y = projected_vertex.y;
+      projected_triangle.points[j].z = projected_vertex.z;
+      projected_triangle.points[j].w = projected_vertex.w;
     }
 
     projected_triangle.tex_coords[0].u = mesh_face.a_uv.u;
@@ -248,9 +250,9 @@ void update(void) {
     projected_triangle.tex_coords[2].u = mesh_face.c_uv.u;
     projected_triangle.tex_coords[2].v = mesh_face.c_uv.v;
 
+    // Apply flat shading
     float light_intensity_factor = -vec3_dot(normal, light.direction);
     uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
-    
     projected_triangle.color = triangle_color;
 
     projected_triangle.avg_depth = (
@@ -315,9 +317,9 @@ void render(void) {
 
     if (render_method == RENDER_TEXTURED || render_method == RENDERED_TEXTURED_WIRE) {
       draw_textured_triangle(
-        triangle.points[0].x, triangle.points[0].y, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
-        triangle.points[1].x, triangle.points[1].y, triangle.tex_coords[1].u, triangle.tex_coords[1].v, 
-        triangle.points[2].x, triangle.points[2].y, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
+        triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+        triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v, 
+        triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
         mesh_texture
       );
     }
