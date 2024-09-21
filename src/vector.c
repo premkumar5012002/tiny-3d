@@ -4,32 +4,31 @@
 
 vec2_t vec2_add(vec2_t v1, vec2_t v2) {
   vec2_t result = {
-      .x = v1.x + v2.x,
-      .y = v1.y + v2.y,
+    .x = v1.x + v2.x,
+    .y = v1.y + v2.y,
   };
   return result;
 }
-
 vec2_t vec2_sub(vec2_t v1, vec2_t v2) {
   vec2_t result = {
-      .x = v1.x - v2.x,
-      .y = v1.y - v2.y,
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
   };
   return result;
 }
 
 vec2_t vec2_mul(vec2_t v, float factor) {
   vec2_t result = {
-      .x = v.x * factor,
-      .y = v.y * factor,
+    .x = v.x * factor,
+    .y = v.y * factor,
   };
   return result;
 }
 
 vec2_t vec2_div(vec2_t v, float factor) {
   vec2_t result = {
-      .x = v.x / factor,
-      .y = v.y / factor,
+    .x = v.x / factor,
+    .y = v.y / factor,
   };
   return result;
 }
@@ -50,45 +49,45 @@ float vec2_dot(vec2_t v1, vec2_t v2) {
 
 vec3_t vec3_add(vec3_t v1, vec3_t v2) {
   vec3_t result = {
-      .x = v1.x + v2.x,
-      .y = v1.y + v2.y,
-      .z = v1.z + v2.z,
+    .x = v1.x + v2.x,
+    .y = v1.y + v2.y,
+    .z = v1.z + v2.z,
   };
   return result;
 }
 
 vec3_t vec3_sub(vec3_t v1, vec3_t v2) {
   vec3_t result = {
-      .x = v1.x - v2.x,
-      .y = v1.y - v2.y,
-      .z = v1.z - v2.z,
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
+    .z = v1.z - v2.z,
   };
   return result;
 }
 
 vec3_t vec3_mul(vec3_t v, float factor) {
   vec3_t result = {
-      .x = v.x * factor,
-      .y = v.y * factor,
-      .z = v.z * factor,
+    .x = v.x * factor,
+    .y = v.y * factor,
+    .z = v.z * factor,
   };
   return result;
 }
 
 vec3_t vec3_div(vec3_t v, float factor) {
   vec3_t result = {
-      .x = v.x / factor,
-      .y = v.y / factor,
-      .z = v.z / factor,
+    .x = v.x / factor,
+    .y = v.y / factor,
+    .z = v.z / factor,
   };
   return result;
 }
 
 vec3_t vec3_cross(vec3_t v1, vec3_t v2) {
   vec3_t result = {
-      .x = v1.y * v2.z - v1.z * v2.y,
-      .y = v1.z * v2.x - v1.x * v2.z,
-      .z = v1.x * v2.y - v1.y * v2.x,
+    .x = v1.y * v2.z - v1.z * v2.y,
+    .y = v1.z * v2.x - v1.x * v2.z,
+    .z = v1.x * v2.y - v1.y * v2.x,
   };
   return result;
 }
@@ -127,6 +126,11 @@ void vec3_rotate_z(vec3_t *v, float angle) {
   float new_y = v->x * sin(angle) + v->y * cos(angle);
   v->x = new_x;
   v->y = new_y;
+}
+
+vec2_t vec2_from_vec4(vec4_t v) {
+  vec2_t result = { v.x, v.y };
+  return result;
 }
 
 vec3_t vec3_from_vec4(vec4_t v) {
