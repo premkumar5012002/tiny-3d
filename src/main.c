@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "triangle.h"
 #include "light.h"
+#include "upng.h"
 
 bool is_paused = false;
 bool is_running = false;
@@ -38,11 +39,12 @@ bool setup(void) {
   // Creating a SDL texture that is used to display the color
   color_buffer_texture = SDL_CreateTexture(
     renderer,
-    SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_RGBA32,
     SDL_TEXTUREACCESS_STREAMING,
     window_width, window_height
   );
 
+  // Initialize the perspective projection matrix
   float fov = M_PI / 3; // the same as 180/3, or 60deg 
   float ascept = (float)window_height / (float)window_width;
   float znear = 0.1;
@@ -50,10 +52,7 @@ bool setup(void) {
   proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
   load_cube_mesh_data();
-
-  // load_obj_file_data("../assets/f22.obj");
-
-  mesh_texture = (uint32_t*) REDBRICK_TEXTURE;
+  load_png_texture_data("../assets/cube.png");
 
   return true;
 }
@@ -354,6 +353,7 @@ void render(void) {
 
 void free_resources(void) {
   free(color_buffer);
+  upng_free(png_texture);
   array_free(mesh.faces);
   array_free(mesh.vertices);
 }

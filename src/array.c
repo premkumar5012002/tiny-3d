@@ -1,7 +1,7 @@
-#include "array.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "array.h"
 
 #define ARRAY_RAW_DATA(array) ((int *)(array) - 2)
 #define ARRAY_CAPACITY(array) (ARRAY_RAW_DATA(array)[0])
