@@ -51,8 +51,8 @@ bool setup(void) {
   float zfar = 100.0;
   proj_matrix = mat4_make_perspective(fov, ascept, znear, zfar);
 
-  load_cube_mesh_data();
-  load_png_texture_data("../assets/cube.png");
+  load_obj_file_data("../assets/crab.obj");
+  load_png_texture_data("../assets/crab.png");
 
   return true;
 }
@@ -163,9 +163,9 @@ void update(void) {
 
     // Due to index of array starts with 0, descreasing mesh_face index with -1
     vec3_t face_vertices[3];
-    face_vertices[0] = mesh.vertices[mesh_face.a - 1];
-    face_vertices[1] = mesh.vertices[mesh_face.b - 1];
-    face_vertices[2] = mesh.vertices[mesh_face.c - 1];
+    face_vertices[0] = mesh.vertices[mesh_face.a];
+    face_vertices[1] = mesh.vertices[mesh_face.b];
+    face_vertices[2] = mesh.vertices[mesh_face.c];
 
     vec4_t transformed_vertices[3];
 
