@@ -22,14 +22,17 @@ vec3_t camera_position = { 0, 0, 0 };
 
 int previous_time_frame = 0;
 
-triangle_t *triangle_to_render = NULL;
+#define MAX_TRIANGLE_PER_MESH 10000
+triangle_t triangle_to_render[MAX_TRIANGLE_PER_MESH];
+int num_triangles_to_render = 0;
 
 enum CULL_METHOD cull_method = CULL_BACKFACE;
 enum RENDER_METHOD render_method = RENDER_WIRE_VERTEX;
 
 bool setup(void) {
-  // Allocate the required memory in bytes to hold the color buffer.
-  color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+  // Allocate the required memory in bytes to hold the color buffer and z buffer.
+  color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
+  z_buffer = (float*)malloc(sizeof(float) * window_width * window_height);
 
   if (color_buffer == NULL) {
     fprintf(stderr, "Error allocating memory to color_buffer. \n");
@@ -122,8 +125,8 @@ void update(void) {
 
   previous_time_frame = SDL_GetTicks64();
 
-  // Initialize the array of triangles to render
-  triangle_to_render = NULL;
+  // Reset the total triangles number for next render
+  num_triangles_to_render = 0;
 
   if (is_paused == false) {
     mesh.rotation.x += 0.01;
@@ -254,38 +257,19 @@ void update(void) {
     uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
     projected_triangle.color = triangle_color;
 
-    projected_triangle.avg_depth = (
-      transformed_vertices[0].z +
-      transformed_vertices[1].z +
-      transformed_vertices[2].z
-    ) / 3;
-
     // Save the projected triangle in the array of triangle to render
-    array_push(triangle_to_render, projected_triangle);
-  }
-
-  // Sort the triangles to render by their avg_depth
-  int num_triangles = array_length(triangle_to_render);
-
-  for (int i = 0; i < num_triangles; i++) {
-    for (int j = i; j < num_triangles; j++) {
-      if (triangle_to_render[i].avg_depth < triangle_to_render[j].avg_depth) {
-        // Swap the triangles positions in the array
-        triangle_t temp = triangle_to_render[i];
-        triangle_to_render[i] = triangle_to_render[j];
-        triangle_to_render[j] = temp;
-      }
+    if (num_triangles_to_render < MAX_TRIANGLE_PER_MESH) {
+      triangle_to_render[num_triangles_to_render] = projected_triangle;
+      num_triangles_to_render++;
     }
-  }  
+  } 
 }
 
 void render(void) {
   draw_dots();
 
   // Loop all projected triangle and render then
-  int num_triangle = array_length(triangle_to_render);
-
-  for (int i = 0; i < num_triangle; i++) {
+  for (int i = 0; i < num_triangles_to_render; i++) {
     triangle_t triangle = triangle_to_render[i];
 
     if (
@@ -293,10 +277,25 @@ void render(void) {
       render_method == RENDER_FILL_TRIANGLE_WIRE
     ) {
       draw_filled_triangle(
-        triangle.points[0].x, triangle.points[0].y,
-        triangle.points[1].x, triangle.points[1].y,
-        triangle.points[2].x, triangle.points[2].y,
+        triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,
+        triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w,
+        triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w,
         triangle.color
+      );
+    }
+
+    if (render_method == RENDER_TEXTURED || render_method == RENDERED_TEXTURED_WIRE) {
+      draw_textured_triangle(
+        triangle.points[0].x, triangle.points[0].y, triangle.points[0].z,
+        triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+
+        triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, 
+        triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v, 
+
+        triangle.points[2].x, triangle.points[2].y, triangle.points[2].z,
+        triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
+
+        mesh_texture
       );
     }
 
@@ -310,16 +309,7 @@ void render(void) {
         triangle.points[0].x, triangle.points[0].y,
         triangle.points[1].x, triangle.points[1].y,
         triangle.points[2].x, triangle.points[2].y,
-        triangle.color
-      );
-    }
-
-    if (render_method == RENDER_TEXTURED || render_method == RENDERED_TEXTURED_WIRE) {
-      draw_textured_triangle(
-        triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
-        triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v, 
-        triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
-        mesh_texture
+        0xFFFF0000
       );
     }
 
@@ -327,7 +317,7 @@ void render(void) {
       draw_rect(
         triangle.points[0].x - 3, triangle.points[0].y - 3,
         6, 6,
-        0xFFFF0000
+        0xFF000000
       );
       draw_rect(
         triangle.points[1].x - 3, triangle.points[1].y - 3,
@@ -342,9 +332,9 @@ void render(void) {
     }
   }
 
-  array_free(triangle_to_render);
-
   render_color_buffer();
+
+  clear_z_buffer();
 
   clear_color_buffer(0xFF000000);
 
@@ -352,6 +342,7 @@ void render(void) {
 }
 
 void free_resources(void) {
+  free(z_buffer);
   free(color_buffer);
   upng_free(png_texture);
   array_free(mesh.faces);
