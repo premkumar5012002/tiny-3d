@@ -19,3 +19,5 @@ mat4_t mat4_make_scale(float sx, float sy, float sz);
 mat4_t mat4_make_translation(float tx, float ty, float tz);
 mat4_t mat4_make_perspective(float fov, float aspect, float znear, float zfar);
 
+mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up);
+

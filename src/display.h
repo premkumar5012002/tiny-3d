@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FPS 30
+#define FPS 60
 // FRAME_TARGET_TIME defines minimum interval wait period between two frames in millisecond
 #define FRAME_TARGET_TIME (1000 / FPS)
 
