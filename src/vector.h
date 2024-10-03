@@ -25,6 +25,9 @@ float vec2_dot(vec2_t v1, vec2_t v2);
 
 
 // Vector 3D
+vec3_t vec3_new(float x, float y, float z);
+vec3_t vec3_clone(vec3_t* v);
+
 vec3_t vec3_add(vec3_t v1, vec3_t v2);
 vec3_t vec3_sub(vec3_t v1, vec3_t v2);
 vec3_t vec3_mul(vec3_t v, float factor);
