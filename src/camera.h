@@ -7,6 +7,23 @@ typedef struct {
     vec3_t direction;
     vec3_t forward_velocity;
     float yaw;
+    float pitch;
 } camera_t;
 
-extern camera_t camera;
+void init_camera(vec3_t position, vec3_t direction);
+
+vec3_t get_camera_position(void);
+vec3_t get_camera_direction(void);
+vec3_t get_camera_forward_velocity(void);
+
+float get_camera_yaw(void);
+float get_camera_pitch(void);
+
+void update_camera_position(vec3_t position);
+void update_camera_direction(vec3_t direction);
+void update_camera_forward_velocity(vec3_t forward_velocity);
+
+void camera_rotate_yaw(float angle);
+void camera_rotate_pitch(float angle);
+
+vec3_t get_camera_lookat_target(void);

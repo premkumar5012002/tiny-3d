@@ -22,18 +22,21 @@ enum RENDER_METHOD {
   RENDERED_TEXTURED_WIRE,
 };
 
-extern int window_width;
-extern int window_height;
-
-extern float* z_buffer;
-extern uint32_t* color_buffer;
-
-extern SDL_Window* window;
-extern SDL_Renderer* renderer;
-extern SDL_Texture* color_buffer_texture;
-
 bool initialize_window(void);
 void destroy_window(void);
+
+int get_window_width(void);
+int get_window_height(void);
+
+void set_cull_method(int method);
+void set_render_method(int method);
+
+bool is_back_culling(void);
+
+bool should_render_filled_triangle(void);
+bool should_render_textured_triangle(void);
+bool should_render_wireframe(void);
+bool should_render_vertex(void);
 
 void draw_grid(void);
 void draw_dots(void);
@@ -41,6 +44,10 @@ void draw_pixel(int x, int y, uint32_t color);
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
 void draw_rect(int x, int y, int width, int height, uint32_t color);
 
-void clear_z_buffer(void);
 void render_color_buffer(void);
+
+float get_zbuffer_at(int x, int y);
+void set_zbuffer_at(int x, int y, float v);
+
+void clear_z_buffer(void);
 void clear_color_buffer(uint32_t color);
