@@ -75,8 +75,12 @@ bool initialize_window(void) {
   // Use SDL to query what is the fullscreen max. width and height
   SDL_DisplayMode display_mode;
   SDL_GetCurrentDisplayMode(0, &display_mode);
+
   int full_screen_window_width = display_mode.w;
   int full_screen_window_height = display_mode.h;
+
+  window_width = display_mode.w;
+  window_height = display_mode.h;
 
   // Create a SDL Window at center of the screen with 800 x 600 resolution with
   // always shown on top all application.
@@ -102,7 +106,7 @@ bool initialize_window(void) {
 
   SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
-    // Allocate the required memory in bytes to hold the color buffer and z buffer.
+  // Allocate the required memory in bytes to hold the color buffer and z buffer.
   color_buffer = (uint32_t*)malloc(sizeof(uint32_t) * window_width * window_height);
   z_buffer = (float*)malloc(sizeof(float) * window_width * window_height);
 
