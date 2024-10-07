@@ -173,12 +173,12 @@ void process_input(void) {
         }
 
         if (event.key.keysym.sym == SDLK_c) {
-          set_render_method(CULL_BACKFACE);
+          set_cull_method(CULL_BACKFACE);
           break;
         }
 
         if (event.key.keysym.sym == SDLK_x) {
-          set_render_method(CULL_NONE);
+          set_cull_method(CULL_NONE);
           break;
         }
         
