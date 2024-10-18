@@ -1,7 +1,8 @@
 #include "display.h"
 
-#include <SDL2/SDL.h>
+#include <stdio.h>
 #include <stdbool.h>
+#include <SDL2/SDL.h>
 
 static int window_width = 800;
 static int window_height = 600;
@@ -192,7 +193,7 @@ void render_color_buffer(void) {
     color_buffer_texture,
     NULL,
     color_buffer,
-    (int)(sizeof(u_int32_t) * window_width)
+    (int)(sizeof(uint32_t) * window_width)
   );
   SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
   SDL_RenderPresent(renderer);
